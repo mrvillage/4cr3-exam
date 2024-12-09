@@ -242,103 +242,206 @@ struct Cli {
 #[derive(clap::Subcommand)]
 enum Command {
     #[command(name = "modinv")]
-    ModInv { a: i128, m: i128 },
+    /// Calculate the modular inverse a^-1 mod m
+    ModInv {
+        /// The number to calculate the modular inverse of
+        a: i128,
+        /// The modulus
+        m: i128,
+    },
     #[command(name = "moddiv")]
-    ModDiv { a: i128, b: i128, m: i128 },
+    /// Calculate the modular division a/b mod m
+    ModDiv {
+        /// The dividend
+        a: i128,
+        /// The divisor
+        b: i128,
+        /// The modulus
+        m: i128,
+    },
     #[command(name = "modpow")]
+    /// Calculate the modular exponentiation base^exp mod modulus
     ModPow {
+        /// The base
         base: i128,
+        /// The exponent
         exp: i128,
+        /// The modulus
         modulus: i128,
     },
     #[command(name = "gen")]
-    Generator { g: i128, p: i128 },
+    /// Check if g is a generator of the group Z_p
+    Generator {
+        /// The generator
+        g: i128,
+        /// The prime modulus
+        p: i128,
+    },
     #[command(name = "pf")]
+    /// Calculate the prime factors of p
     PrimeFactors { p: i128 },
     #[command(name = "gcd")]
+    /// Calculate the greatest common divisor of a and b
     Gcd { a: i128, b: i128 },
     #[command(name = "ee")]
+    /// Calculate the extended Euclidean algorithm for a and b
     ExtendedEuclid { a: i128, b: i128 },
     #[command(name = "rsa-sig")]
-    RsaSign { n: i128, d: i128, m: i128 },
+    /// Calculate the RSA signature of m
+    RsaSign {
+        /// The modulus
+        n: i128,
+        /// The private exponent
+        d: i128,
+        /// The message
+        m: i128,
+    },
     #[command(name = "rsa-ver")]
-    RsaVer { n: i128, e: i128, m: i128, s: i128 },
+    /// Verify the RSA signature of m
+    RsaVer {
+        /// The modulus
+        n: i128,
+        /// The public exponent
+        e: i128,
+        /// The message
+        m: i128,
+        /// The signature
+        s: i128,
+    },
     #[command(name = "order")]
+    /// Calculate the order of g in Z_p
     Order { g: i128, p: i128 },
     #[command(name = "is-dsa-pub")]
+    /// Check if b is a public key for DSA
     DsaIsPubKey { p: i128, q: i128, b: i128 },
     #[command(name = "is-ec")]
+    /// Check if the curve is an elliptic curve
     IsEc { a: i128, b: i128, p: i128 },
     #[command(name = "ec-points")]
+    /// Calculate the points on the elliptic curve
     EcPoints { a: i128, b: i128, p: i128 },
     #[command(name = "is-ec-point")]
+    /// Check if the point is on the elliptic curve
     IsEcPoint {
+        /// The curve parameter a
         a: i128,
+        /// The curve parameter b
         b: i128,
+        /// The curve parameter p
         p: i128,
+        /// The x-coordinate of the point
         x: i128,
+        /// The y-coordinate of the point
         y: i128,
     },
     #[command(name = "ec-add")]
+    /// Add two points on the elliptic curve
     EcAdd {
+        /// The curve parameter a
         a: i128,
+        /// The curve parameter b
         b: i128,
+        /// The curve parameter p
         p: i128,
+        /// The x-coordinate of the first point
         x1: i128,
+        /// The y-coordinate of the first point
         y1: i128,
+        /// The x-coordinate of the second point
         x2: i128,
+        /// The y-coordinate of the second point
         y2: i128,
     },
     #[command(name = "ec-double")]
+    /// Double a point on the elliptic curve
     EcDouble {
+        /// The curve parameter a
         a: i128,
+        /// The curve parameter b
         b: i128,
+        /// The curve parameter p
         p: i128,
+        /// The x-coordinate of the point
         x: i128,
+        /// The y-coordinate of the point
         y: i128,
     },
     #[command(name = "ec-order")]
+    /// Calculate the order of the point on the elliptic curve
     EcOrder {
+        /// The curve parameter a
         a: i128,
+        /// The curve parameter b
         b: i128,
+        /// The curve parameter p
         p: i128,
+        /// The x-coordinate of the point
         x: i128,
+        /// The y-coordinate of the point
         y: i128,
     },
     #[command(name = "dsa-sig")]
+    /// Calculate the DSA signature of m
     DsaSign {
+        /// The prime p
         p: i128,
+        /// The prime q
         q: i128,
+        /// The generator
         g: i128,
+        /// The private key
         d: i128,
+        /// The random number
         k: i128,
+        /// The message
         m: i128,
     },
     #[command(name = "dsa-ver")]
+    /// Verify the DSA signature of m
     DsaVer {
+        /// The prime p
         p: i128,
+        /// The prime q
         q: i128,
+        /// The generator
         g: i128,
+        /// The public key
         b: i128,
+        /// The signature r
         r: i128,
+        /// The signature s
         s: i128,
+        /// The message
         m: i128,
     },
     #[command(name = "elg-sig")]
+    /// Calculate the Elgamal signature of m
     ElgamalSig {
+        /// The prime p
         p: i128,
+        /// The generator
         g: i128,
+        /// The private key
         d: i128,
+        /// The random number
         k: i128,
+        /// The message
         m: i128,
     },
     #[command(name = "elg-ver")]
+    /// Verify the Elgamal signature of m
     ElgamalVer {
+        /// The prime p
         p: i128,
+        /// The generator
         g: i128,
+        /// The public key
         b: i128,
+        /// The signature r
         r: i128,
+        /// The signature s
         s: i128,
+        /// The message
         m: i128,
     },
 }
