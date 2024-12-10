@@ -7,6 +7,7 @@ edition = "2021"
 aes = "0.8.4"
 bigint = "4.4.3"
 clap = { version = "4.5.23", features = ["derive"] }
+des = "0.8.1"
 faer = "0.19.4"
 num-bigint = "0.4.6"
 num-traits = "0.2.19"

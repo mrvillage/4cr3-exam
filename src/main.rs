@@ -3,7 +3,12 @@ mod lfsr;
 
 use std::collections::{HashMap, HashSet};
 
+use aes::{
+    cipher::{Block, BlockDecrypt, BlockEncrypt, Key, KeyInit},
+    Aes128,
+};
 use clap::Parser;
+use des::Des;
 use eval::Expr;
 use lfsr::{read_binary_string, solve_for_coefs, to_binary_string, Lfsr};
 use sha2::Digest;
@@ -261,6 +266,49 @@ fn elgamal_enc(p: i128, g: i128, kb: i128, exp: i128, m: i128) -> (i128, i128) {
 fn elgamal_dec(p: i128, ka: i128, exp: i128, c: i128) -> i128 {
     let kab = modpow(ka, exp, p);
     c * modinv(kab, p) % p
+}
+
+fn des_enc(key: u64, plaintext: u64) -> u64 {
+    let des = Des::new(Key::<Des>::from_slice(&key.to_be_bytes()));
+    let mut block = Block::<Des>::from(plaintext.to_be_bytes());
+    des.encrypt_block(&mut block);
+    u64::from_be_bytes(block.into())
+}
+
+fn des_dec(key: u64, ciphertext: u64) -> u64 {
+    let des = Des::new(Key::<Des>::from_slice(&key.to_be_bytes()));
+    let mut block = Block::<Des>::from(ciphertext.to_be_bytes());
+    des.decrypt_block(&mut block);
+    u64::from_be_bytes(block.into())
+}
+
+fn aes_enc(key: u128, plaintext: u128) -> u128 {
+    let cipher = aes::Aes128::new(Key::<Aes128>::from_slice(&key.to_be_bytes()));
+    let mut block = Block::<Aes128>::from(plaintext.to_be_bytes());
+    cipher.encrypt_block(&mut block);
+    u128::from_be_bytes(block.into())
+}
+
+fn aes_dec(key: u128, ciphertext: u128) -> u128 {
+    let cipher = aes::Aes128::new(Key::<Aes128>::from_slice(&key.to_be_bytes()));
+    let mut block = Block::<Aes128>::from(ciphertext.to_be_bytes());
+    cipher.decrypt_block(&mut block);
+    u128::from_be_bytes(block.into())
+}
+
+// this could be a more efficient algorithm, but our exam numbers will be small so this will be
+// fine
+fn dlp(g: i128, b: i128, p: i128) -> i128 {
+    let mut x = 1;
+    let mut a = g;
+    while a != b && x < p {
+        a = (a * g) % p;
+        x += 1;
+    }
+    if x == p {
+        panic!("No solution found");
+    }
+    x
 }
 
 #[derive(clap::Parser)]
@@ -650,6 +698,52 @@ enum Command {
         /// The output of the LFSR, must be 2 * coefs in length, i.e. 10101010
         output: String,
     },
+    #[command(name = "des-enc")]
+    /// Encrypt a message using the Data Encryption Standard
+    /// The key and plaintext must be 64-bit unsigned integers
+    DesEnc {
+        /// The key
+        key: u64,
+        /// The plaintext
+        plaintext: u64,
+    },
+    #[command(name = "des-dec")]
+    /// Decrypt a message using the Data Encryption Standard
+    /// The key and ciphertext must be 64-bit unsigned integers
+    DesDec {
+        /// The key
+        key: u64,
+        /// The ciphertext
+        ciphertext: u64,
+    },
+    #[command(name = "aes-enc")]
+    /// Encrypt a message using the Advanced Encryption Standard
+    /// The key and plaintext must be 128-bit unsigned integers
+    AesEnc {
+        /// The key
+        key: u128,
+        /// The plaintext
+        plaintext: u128,
+    },
+    #[command(name = "aes-dec")]
+    /// Decrypt a message using the Advanced Encryption Standard
+    /// The key and ciphertext must be 128-bit unsigned integers
+    AesDec {
+        /// The key
+        key: u128,
+        /// The ciphertext
+        ciphertext: u128,
+    },
+    #[command(name = "dlp")]
+    /// Solve the discrete logarithm problem g^x = b mod p
+    Dlp {
+        /// The generator
+        g: i128,
+        /// The base
+        b: i128,
+        /// The modulus
+        p: i128,
+    },
 }
 
 fn main() {
@@ -774,7 +868,7 @@ fn main() {
             println!("{}", elgamal_dec(p, ka, exp, c));
         }
         Command::Sha256 { num, msg } => {
-            let mut hasher = sha2::Sha256::new();
+            let mut hasher = <sha2::Sha256 as Digest>::new();
             if num.is_none() && msg.is_none() {
                 panic!("One of num or msg must be provided");
             }
@@ -819,6 +913,21 @@ fn main() {
             let mut bin = to_binary_string(&coefs);
             bin.insert(8, ' ');
             println!("{}", bin);
+        }
+        Command::DesEnc { key, plaintext } => {
+            println!("{}", des_enc(key, plaintext));
+        }
+        Command::DesDec { key, ciphertext } => {
+            println!("{}", des_dec(key, ciphertext));
+        }
+        Command::AesEnc { key, plaintext } => {
+            println!("{}", aes_enc(key, plaintext));
+        }
+        Command::AesDec { key, ciphertext } => {
+            println!("{}", aes_dec(key, ciphertext));
+        }
+        Command::Dlp { g, b, p } => {
+            println!("{}", dlp(g, b, p));
         }
     }
 }
@@ -1089,5 +1198,36 @@ mod tests {
         let m = 33;
         let (ka, c) = elgamal_enc(p, g, modpow(g, d, p), exp, m);
         assert_eq!(elgamal_dec(p, ka, d, c), m);
+    }
+
+    #[test]
+    fn test_des_roundtrip() {
+        assert_eq!(
+            des_dec(
+                0x133457799BBCDFF1,
+                des_enc(0x133457799BBCDFF1, 0x0123456789ABCDEF)
+            ),
+            0x0123456789ABCDEF
+        );
+    }
+
+    #[test]
+    fn test_aes_roundtrip() {
+        assert_eq!(
+            aes_dec(
+                0x2b7e151628aed2a6abf7158809cf4f3c,
+                aes_enc(
+                    0x2b7e151628aed2a6abf7158809cf4f3c,
+                    0x3243f6a8885a308d313198a2e0370734
+                )
+            ),
+            0x3243f6a8885a308d313198a2e0370734
+        );
+    }
+
+    #[test]
+    fn test_dlp() {
+        assert_eq!(dlp(5, 41, 47), 15);
+        assert_eq!(dlp(2, 36, 47), 17);
     }
 }
