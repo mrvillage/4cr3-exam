@@ -248,6 +248,8 @@ enum Command {
     /// Evaluate an expression modulo m
     /// The expression can contain numbers, operators (+, -, *, /, ^), and parentheses
     /// For example, exam eval 7 "5 + 3 * (2 - 1) ^ 2" and exam eval 3 2 ^ 3 ^ 2 will evaluate to 1
+    /// If using parentheses, you may need to quote the expression to prevent the shell from
+    /// getting cranky
     Eval {
         /// The modulus
         m: i128,
