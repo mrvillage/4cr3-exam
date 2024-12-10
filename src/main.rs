@@ -316,12 +316,16 @@ enum Command {
     /// Verify the RSA signature of m
     RsaVer {
         /// The modulus
+        #[arg(short)]
         n: i128,
         /// The public exponent
+        #[arg(short)]
         e: i128,
         /// The message
+        #[arg(short)]
         m: i128,
         /// The signature
+        #[arg(short)]
         s: i128,
     },
     #[command(name = "order")]
@@ -340,124 +344,170 @@ enum Command {
     /// Check if the point is on the elliptic curve
     IsEcPoint {
         /// The curve parameter a
+        #[arg(short)]
         a: i128,
         /// The curve parameter b
+        #[arg(short)]
         b: i128,
         /// The curve parameter p
+        #[arg(short)]
         p: i128,
         /// The x-coordinate of the point
+        #[arg(short)]
         x: i128,
         /// The y-coordinate of the point
+        #[arg(short)]
         y: i128,
     },
     #[command(name = "ec-add")]
     /// Add two points on the elliptic curve
     EcAdd {
         /// The curve parameter a
+        #[arg(short)]
         a: i128,
         /// The curve parameter b
+        #[arg(short)]
         b: i128,
         /// The curve parameter p
+        #[arg(short)]
         p: i128,
         /// The x-coordinate of the first point
+        #[arg(short)]
         x1: i128,
         /// The y-coordinate of the first point
+        #[arg(short)]
         y1: i128,
         /// The x-coordinate of the second point
+        #[arg(short)]
         x2: i128,
         /// The y-coordinate of the second point
+        #[arg(short)]
         y2: i128,
     },
     #[command(name = "ec-double")]
     /// Double a point on the elliptic curve
     EcDouble {
         /// The curve parameter a
+        #[arg(short)]
         a: i128,
         /// The curve parameter b
+        #[arg(short)]
         b: i128,
         /// The curve parameter p
+        #[arg(short)]
         p: i128,
         /// The x-coordinate of the point
+        #[arg(short)]
         x: i128,
         /// The y-coordinate of the point
+        #[arg(short)]
         y: i128,
     },
     #[command(name = "ec-order")]
     /// Calculate the order of the point on the elliptic curve
     EcOrder {
         /// The curve parameter a
+        #[arg(short)]
         a: i128,
         /// The curve parameter b
+        #[arg(short)]
         b: i128,
         /// The curve parameter p
+        #[arg(short)]
         p: i128,
         /// The x-coordinate of the point
+        #[arg(short)]
         x: i128,
         /// The y-coordinate of the point
+        #[arg(short)]
         y: i128,
     },
     #[command(name = "dsa-sig")]
     /// Calculate the DSA signature of m
     DsaSign {
         /// The prime p
+        #[arg(short)]
         p: i128,
         /// The prime q
+        #[arg(short)]
         q: i128,
         /// The generator
+        #[arg(short)]
         g: i128,
         /// The private key
+        #[arg(short)]
         d: i128,
         /// The random number
+        #[arg(short)]
         k: i128,
         /// The message
+        #[arg(short)]
         m: i128,
     },
     #[command(name = "dsa-ver")]
     /// Verify the DSA signature of m
     DsaVer {
         /// The prime p
+        #[arg(short)]
         p: i128,
         /// The prime q
+        #[arg(short)]
         q: i128,
         /// The generator
+        #[arg(short)]
         g: i128,
         /// The public key
+        #[arg(short)]
         b: i128,
         /// The signature r
+        #[arg(short)]
         r: i128,
         /// The signature s
+        #[arg(short)]
         s: i128,
         /// The message
+        #[arg(short)]
         m: i128,
     },
     #[command(name = "elg-sig")]
     /// Calculate the Elgamal signature of m
     ElgamalSig {
         /// The prime p
+        #[arg(short)]
         p: i128,
         /// The generator
+        #[arg(short)]
         g: i128,
         /// The private key
+        #[arg(short)]
         d: i128,
         /// The random number
+        #[arg(short)]
         k: i128,
         /// The message
+        #[arg(short)]
         m: i128,
     },
     #[command(name = "elg-ver")]
     /// Verify the Elgamal signature of m
     ElgamalVer {
         /// The prime p
+        #[arg(short)]
         p: i128,
         /// The generator
+        #[arg(short)]
         g: i128,
         /// The public key
+        #[arg(short)]
         b: i128,
         /// The signature r
+        #[arg(short)]
         r: i128,
         /// The signature s
+        #[arg(short)]
         s: i128,
         /// The message
+        #[arg(short)]
         m: i128,
     },
 }
