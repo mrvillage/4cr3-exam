@@ -571,7 +571,7 @@ enum Command {
         /// The generator
         #[arg(short)]
         g: i128,
-        /// This is g^y mod p, where y is the exponent chosen by Bob
+        /// This is g^d mod p, where d is the exponent chosen by Bob
         /// This is the public key of Bob
         #[arg(short)]
         kb: i128,
