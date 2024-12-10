@@ -218,7 +218,7 @@ fn dsa_sig(p: i128, q: i128, g: i128, d: i128, k: i128, m: i128) -> (i128, i128)
 }
 
 fn dsa_ver(p: i128, q: i128, g: i128, b: i128, r: i128, s: i128, m: i128) -> bool {
-    let w = modinv(s, q);
+    let w = modulus(modinv(s, q), q);
     let u1 = w * m % q;
     let u2 = w * r % q;
     let v = modpow(g, u1, p) * modpow(b, u2, p) % p % q;
@@ -807,5 +807,16 @@ mod tests {
     fn test_elgamal_ver() {
         assert!(elgamal_ver(53, 27, 51, 31, 38, 41));
         assert!(!elgamal_ver(53, 27, 51, 31, 39, 41));
+    }
+
+    #[test]
+    fn test_elgamal_roundtrip() {
+        let p = 53;
+        let g = 27;
+        let d = 25;
+        let k = 19;
+        let m = 41;
+        let (r, s) = elgamal_sig(p, g, d, k, m);
+        assert!(elgamal_ver(p, g, modpow(g, d, p), r, s, m));
     }
 }
