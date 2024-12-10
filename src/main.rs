@@ -993,11 +993,13 @@ mod tests {
     #[test]
     fn test_elgamal_enc() {
         assert_eq!(elgamal_enc(53, 27, 46, 32, 21), (24, 34));
+        assert_eq!(elgamal_enc(467, 2, 444, 213, 33), (29, 296));
     }
 
     #[test]
     fn test_elgamal_dec() {
         assert_eq!(elgamal_dec(53, 24, 12, 34), 21);
+        assert_eq!(elgamal_dec(467, 29, 105, 296), 33);
     }
 
     #[test]
@@ -1007,6 +1009,14 @@ mod tests {
         let d = 46;
         let exp = 32;
         let m = 21;
+        let (ka, c) = elgamal_enc(p, g, modpow(g, d, p), exp, m);
+        assert_eq!(elgamal_dec(p, ka, d, c), m);
+
+        let p = 467;
+        let g = 2;
+        let d = 105;
+        let exp = 213;
+        let m = 33;
         let (ka, c) = elgamal_enc(p, g, modpow(g, d, p), exp, m);
         assert_eq!(elgamal_dec(p, ka, d, c), m);
     }
