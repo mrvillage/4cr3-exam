@@ -1,9 +1,11 @@
 mod eval;
+mod lfsr;
 
 use std::collections::{HashMap, HashSet};
 
 use clap::Parser;
 use eval::Expr;
+use lfsr::{read_binary_string, solve_for_coefs, to_binary_string, Lfsr};
 use sha2::Digest;
 
 fn modulus(a: i128, m: i128) -> i128 {
@@ -610,6 +612,44 @@ enum Command {
         #[arg(short)]
         num: Option<i128>,
     },
+    #[command(name = "lfsr-gen")]
+    /// Generate bits using a linear feedback shift register
+    LfsrGen {
+        /// The coefficients of the LFSR, i.e. 1011
+        coefs: String,
+        /// The initial state of the LFSR, i.e. 1010
+        init: String,
+        /// The number of bits to generate
+        num: usize,
+    },
+    #[command(name = "lfsr-enc")]
+    /// Encrypt a message using a linear feedback shift register
+    LfsrEnc {
+        /// The coefficients of the LFSR, i.e. 1011
+        coefs: String,
+        /// The initial state of the LFSR, i.e. 1010
+        init: String,
+        /// The message to encrypt, i.e. 10101010
+        msg: String,
+    },
+    #[command(name = "lfsr-dec")]
+    /// Decrypt a message using a linear feedback shift register
+    LfsrDec {
+        /// The coefficients of the LFSR, i.e. 1011
+        coefs: String,
+        /// The initial state of the LFSR, i.e. 1010
+        init: String,
+        /// The message to decrypt, i.e. 10101010
+        msg: String,
+    },
+    #[command(name = "lfsr-solve")]
+    /// Solve for the coefficients of an LFSR given the output
+    LfsrSolve {
+        /// The number of coefficients
+        coefs: usize,
+        /// The output of the LFSR, must be 2 * coefs in length, i.e. 10101010
+        output: String,
+    },
 }
 
 fn main() {
@@ -749,6 +789,36 @@ fn main() {
             }
             let result = hasher.finalize();
             println!("{:x}", result);
+        }
+        Command::LfsrGen { coefs, init, num } => {
+            let mut lfsr = Lfsr::new(read_binary_string(&coefs), read_binary_string(&init));
+            let bits = (0..num).map(|_| lfsr.next()).collect::<Vec<_>>();
+            let mut bin = to_binary_string(&bits);
+            bin.insert(8, ' ');
+            println!("{}", bin);
+        }
+        Command::LfsrEnc { coefs, init, msg } => {
+            let mut lfsr = Lfsr::new(read_binary_string(&coefs), read_binary_string(&init));
+            let bits = read_binary_string(&msg);
+            let enc = lfsr.encrypt(&bits);
+            let mut bin = to_binary_string(&enc);
+            bin.insert(8, ' ');
+            println!("{}", bin);
+        }
+        Command::LfsrDec { coefs, init, msg } => {
+            let mut lfsr = Lfsr::new(read_binary_string(&coefs), read_binary_string(&init));
+            let bits = read_binary_string(&msg);
+            let dec = lfsr.decrypt(&bits);
+            let mut bin = to_binary_string(&dec);
+            bin.insert(8, ' ');
+            println!("{}", bin);
+        }
+        Command::LfsrSolve { coefs, output } => {
+            let output = read_binary_string(&output);
+            let coefs = solve_for_coefs(coefs, &output);
+            let mut bin = to_binary_string(&coefs);
+            bin.insert(8, ' ');
+            println!("{}", bin);
         }
     }
 }
