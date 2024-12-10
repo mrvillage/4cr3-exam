@@ -1,6 +1,9 @@
+mod eval;
+
 use std::collections::{HashMap, HashSet};
 
 use clap::Parser;
+use eval::Expr;
 
 fn modulus(a: i128, m: i128) -> i128 {
     let r = a % m;
@@ -11,7 +14,7 @@ fn modulus(a: i128, m: i128) -> i128 {
     }
 }
 
-fn modinv(a: i128, m: i128) -> i128 {
+pub fn modinv(a: i128, m: i128) -> i128 {
     let a = modulus(a, m);
     let gcd = gcd(a, m);
     if gcd != 1 {
@@ -241,6 +244,16 @@ struct Cli {
 
 #[derive(clap::Subcommand)]
 enum Command {
+    #[command(name = "eval")]
+    /// Evaluate an expression modulo m
+    /// The expression can contain numbers, operators (+, -, *, /, ^), and parentheses
+    Eval {
+        /// The modulus
+        m: i128,
+        /// The expression to evaluate
+        #[arg(trailing_var_arg = true)]
+        expr: Vec<String>,
+    },
     #[command(name = "modinv")]
     /// Calculate the modular inverse a^-1 mod m
     ModInv {
@@ -450,6 +463,19 @@ fn main() {
     let cli = Cli::parse();
 
     match cli.command {
+        Command::Eval { m, expr } => {
+            let expr = Expr::parse_str(&expr.join(" "));
+            match expr {
+                Ok(expr) => {
+                    println!("Evaluated expression (mod {}):", m);
+                    println!("{}", expr);
+                    println!("Result: {}", expr.eval(m));
+                }
+                Err(e) => {
+                    eprintln!("{}", e);
+                }
+            }
+        }
         Command::ModInv { a, m } => {
             println!("{}", modinv(a, m));
         }
