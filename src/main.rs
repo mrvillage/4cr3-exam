@@ -199,7 +199,7 @@ fn ec_add(a: i128, _b: i128, p: i128, x1: i128, y1: i128, x2: i128, y2: i128) ->
         moddiv(3 * x1.pow(2) + a, 2 * y1, p)
     } else {
         // point addition
-        if (x1, x2) == (x2, -y2) {
+        if x1 == x2 {
             return (0, 0);
         }
         moddiv(y2 - y1, x2 - x1, p)
