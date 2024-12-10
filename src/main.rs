@@ -213,7 +213,7 @@ fn ec_order(a: i128, b: i128, p: i128, x: i128, y: i128) -> i128 {
 
 fn dsa_sig(p: i128, q: i128, g: i128, d: i128, k: i128, m: i128) -> (i128, i128) {
     let r = modpow(g, k, p) % q;
-    let s = moddiv(k, modinv(m - r * d, q), q);
+    let s = moddiv(m + r * d, k, q);
     (r, s)
 }
 
@@ -710,6 +710,15 @@ mod tests {
     }
 
     #[test]
+    fn test_rsa_roundtrip() {
+        let n = 85;
+        let d = 57;
+        let m = 6;
+        let s = rsa_sig(n, d, m);
+        assert!(rsa_ver(n, 9, m, s));
+    }
+
+    #[test]
     fn test_order() {
         assert_eq!(order(1, 11), 1);
         assert_eq!(order(2, 11), 10);
@@ -796,6 +805,18 @@ mod tests {
     fn test_dsa_ver() {
         assert!(dsa_ver(53, 13, 10, 24, 2, 1, 6));
         assert!(!dsa_ver(53, 13, 10, 24, 3, 1, 6));
+    }
+
+    #[test]
+    fn test_dsa_roundtrip() {
+        let p = 53;
+        let q = 13;
+        let g = 10;
+        let d = 8;
+        let k = 9;
+        let m = 6;
+        let (r, s) = dsa_sig(p, q, g, d, k, m);
+        assert!(dsa_ver(p, q, g, modpow(g, d, p), r, s, m));
     }
 
     #[test]
