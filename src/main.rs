@@ -473,16 +473,16 @@ enum Command {
         #[arg(short)]
         p: i128,
         /// The x-coordinate of the first point
-        #[arg(short)]
+        #[arg(long)]
         x1: i128,
         /// The y-coordinate of the first point
-        #[arg(short)]
+        #[arg(long)]
         y1: i128,
         /// The x-coordinate of the second point
-        #[arg(short)]
+        #[arg(long)]
         x2: i128,
         /// The y-coordinate of the second point
-        #[arg(short)]
+        #[arg(long)]
         y2: i128,
     },
     #[command(name = "ec-double")]
