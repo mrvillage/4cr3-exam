@@ -247,6 +247,7 @@ enum Command {
     #[command(name = "eval")]
     /// Evaluate an expression modulo m
     /// The expression can contain numbers, operators (+, -, *, /, ^), and parentheses
+    /// For example, exam eval 7 "5 + 3 * (2 - 1) ^ 2" and exam eval 3 2 ^ 3 ^ 2 will evaluate to 1
     Eval {
         /// The modulus
         m: i128,
