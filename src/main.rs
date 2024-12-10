@@ -4,6 +4,7 @@ use std::collections::{HashMap, HashSet};
 
 use clap::Parser;
 use eval::Expr;
+use sha2::Digest;
 
 fn modulus(a: i128, m: i128) -> i128 {
     let r = a % m;
@@ -121,6 +122,14 @@ fn rsa_ver(n: i128, e: i128, m: i128, s: i128) -> bool {
     modpow(s, e, n) == m
 }
 
+fn rsa_enc(n: i128, e: i128, m: i128) -> i128 {
+    modpow(m, e, n)
+}
+
+fn rsa_dec(n: i128, d: i128, m: i128) -> i128 {
+    modpow(m, d, n)
+}
+
 fn order(g: i128, p: i128) -> i128 {
     let mut i = 1;
     let mut n = g;
@@ -236,6 +245,22 @@ fn elgamal_ver(p: i128, g: i128, b: i128, r: i128, s: i128, m: i128) -> bool {
     t == modpow(g, m, p)
 }
 
+// Alice is encrypting a message m to Bob using Elgamal encryption
+// exp is the random exponent chosen by Alice
+// returns the ciphertext (ka, c)
+fn elgamal_enc(p: i128, g: i128, kb: i128, exp: i128, m: i128) -> (i128, i128) {
+    let ka = modpow(g, exp, p);
+    let kab = modpow(kb, exp, p);
+    (ka, (m * kab) % p)
+}
+
+// Bob is decrypting a ciphertext c from Alice using Elgamal decryption
+// exp is the random exponent chosen by Bob used to generate kb
+fn elgamal_dec(p: i128, ka: i128, exp: i128, c: i128) -> i128 {
+    let kab = modpow(ka, exp, p);
+    c * modinv(kab, p) % p
+}
+
 #[derive(clap::Parser)]
 struct Cli {
     #[command(subcommand)]
@@ -327,6 +352,32 @@ enum Command {
         /// The signature
         #[arg(short)]
         s: i128,
+    },
+    /// Calculate the RSA encryption of m
+    #[command(name = "rsa-enc")]
+    RsaEnc {
+        /// The modulus
+        #[arg(short)]
+        n: i128,
+        /// The public exponent
+        #[arg(short)]
+        e: i128,
+        /// The message
+        #[arg(short)]
+        m: i128,
+    },
+    /// Calculate the RSA decryption of m
+    #[command(name = "rsa-dec")]
+    RsaDec {
+        /// The modulus
+        #[arg(short)]
+        n: i128,
+        /// The private exponent
+        #[arg(short)]
+        d: i128,
+        /// The message
+        #[arg(short)]
+        m: i128,
     },
     #[command(name = "order")]
     /// Calculate the order of g in Z_p
@@ -510,6 +561,55 @@ enum Command {
         #[arg(short)]
         m: i128,
     },
+    #[command(name = "elg-enc")]
+    /// Calculate the Elgamal encryption of m
+    /// Alice is encrypting a message m to Bob
+    ElgamalEnc {
+        /// The prime p
+        #[arg(short)]
+        p: i128,
+        /// The generator
+        #[arg(short)]
+        g: i128,
+        /// This is g^y mod p, where y is the exponent chosen by Bob
+        /// This is the public key of Bob
+        #[arg(short)]
+        kb: i128,
+        /// The random exponent chosen by Alice
+        #[arg(short)]
+        exp: i128,
+        /// The message
+        #[arg(short)]
+        m: i128,
+    },
+    #[command(name = "elg-dec")]
+    /// Calculate the Elgamal decryption of c
+    /// Bob is decrypting a ciphertext c from Alice
+    ElgamalDec {
+        /// The prime p
+        #[arg(short)]
+        p: i128,
+        /// This is the ka chosen by Alice (sent in the ciphertext)
+        #[arg(short)]
+        ka: i128,
+        /// The random exponent chosen by Bob used to generate kb
+        #[arg(short)]
+        exp: i128,
+        /// The ciphertext
+        #[arg(short)]
+        c: i128,
+    },
+    #[command(name = "sha256")]
+    /// Calculate the SHA-256 hash of a message
+    /// One of msg or num must be provided
+    Sha256 {
+        /// The message to hash
+        #[arg(short)]
+        msg: Option<String>,
+        /// The number to hash, big-endian 128-bit integer
+        #[arg(short)]
+        num: Option<i128>,
+    },
 }
 
 fn main() {
@@ -559,6 +659,12 @@ fn main() {
         }
         Command::RsaVer { n, e, m, s } => {
             println!("{}", rsa_ver(n, e, m, s));
+        }
+        Command::RsaEnc { n, e, m } => {
+            println!("{}", rsa_enc(n, e, m));
+        }
+        Command::RsaDec { n, d, m } => {
+            println!("{}", rsa_dec(n, d, m));
         }
         Command::Order { g, p } => {
             println!("{}", order(g, p));
@@ -619,6 +725,30 @@ fn main() {
         }
         Command::ElgamalVer { p, g, b, r, s, m } => {
             println!("{}", elgamal_ver(p, g, b, r, s, m));
+        }
+        Command::ElgamalEnc { p, g, kb, exp, m } => {
+            let (ka, c) = elgamal_enc(p, g, kb, exp, m);
+            println!("(ka = {}, c = {})", ka, c);
+        }
+        Command::ElgamalDec { p, ka, exp, c } => {
+            println!("{}", elgamal_dec(p, ka, exp, c));
+        }
+        Command::Sha256 { num, msg } => {
+            let mut hasher = sha2::Sha256::new();
+            if num.is_none() && msg.is_none() {
+                panic!("One of num or msg must be provided");
+            }
+            if num.is_some() && msg.is_some() {
+                panic!("Only one of num or msg can be provided");
+            }
+            if let Some(num) = num {
+                hasher.update(num.to_be_bytes());
+            }
+            if let Some(msg) = msg {
+                hasher.update(msg);
+            }
+            let result = hasher.finalize();
+            println!("{:x}", result);
         }
     }
 }
@@ -710,7 +840,26 @@ mod tests {
     }
 
     #[test]
-    fn test_rsa_roundtrip() {
+    fn test_rsa_enc() {
+        assert_eq!(rsa_enc(85, 9, 23), 28);
+    }
+
+    #[test]
+    fn test_rsa_dec() {
+        assert_eq!(rsa_dec(85, 57, 28), 23);
+    }
+
+    #[test]
+    fn test_rsa_enc_roundtrip() {
+        let n = 85;
+        let e = 9;
+        let m = 23;
+        let c = rsa_enc(n, e, m);
+        assert_eq!(rsa_dec(n, 57, c), m);
+    }
+
+    #[test]
+    fn test_rsa_sig_roundtrip() {
         let n = 85;
         let d = 57;
         let m = 6;
@@ -831,7 +980,7 @@ mod tests {
     }
 
     #[test]
-    fn test_elgamal_roundtrip() {
+    fn test_elgamal_sig_roundtrip() {
         let p = 53;
         let g = 27;
         let d = 25;
@@ -839,5 +988,26 @@ mod tests {
         let m = 41;
         let (r, s) = elgamal_sig(p, g, d, k, m);
         assert!(elgamal_ver(p, g, modpow(g, d, p), r, s, m));
+    }
+
+    #[test]
+    fn test_elgamal_enc() {
+        assert_eq!(elgamal_enc(53, 27, 46, 32, 21), (24, 34));
+    }
+
+    #[test]
+    fn test_elgamal_dec() {
+        assert_eq!(elgamal_dec(53, 24, 12, 34), 21);
+    }
+
+    #[test]
+    fn test_elgamal_enc_dec() {
+        let p = 53;
+        let g = 27;
+        let d = 46;
+        let exp = 32;
+        let m = 21;
+        let (ka, c) = elgamal_enc(p, g, modpow(g, d, p), exp, m);
+        assert_eq!(elgamal_dec(p, ka, d, c), m);
     }
 }
